@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline Assainissement — Plateforme</title>
+  <link rel="stylesheet" href="/style.css?v=2">
+</head>
+<body>
+  <header>
+    <h1>Pipeline Assainissement</h1>
+    <span class="subtitle">Modèle prédictif pour la gestion patrimoniale</span>
+  </header>
+
+  <div class="layout">
+
+    <!-- Menu latéral : étapes du pipeline -->
+    <aside class="sidebar" id="sidebar">
+      <div class="phase-group">
+        <h3>Phase A — Préparation</h3>
+        <ul id="steps-A"></ul>
+      </div>
+      <div class="phase-group">
+        <h3>Phase B — Complétion</h3>
+        <ul id="steps-B"></ul>
+      </div>
+      <div class="phase-group">
+        <h3>Phase C — État de santé</h3>
+        <ul id="steps-C"></ul>
+      </div>
+      <div class="phase-group">
+        <h3>Analyses</h3>
+        <ul id="steps-stats"></ul>
+      </div>
+    </aside>
+
+    <!-- Centre : configuration de l'étape -->
+    <main class="config-panel" id="config-panel">
+      <div class="placeholder">
+        <p>Sélectionnez une étape dans le menu pour commencer.</p>
+      </div>
+    </main>
+
+    <!-- Droite : suivi du job -->
+    <section class="monitor-panel">
+      <h2>Suivi temps réel</h2>
+      <div class="job-info" id="job-info">
+        <p class="muted">Aucun job en cours.</p>
+      </div>
+      <pre id="logs" class="logs"></pre>
+    </section>
+
+  </div>
+
+  <!-- Modal browser de fichiers -->
+  <div class="modal-backdrop hidden" id="file-modal">
+    <div class="modal">
+      <header>
+        <h3 id="file-modal-title">Choisir un fichier</h3>
+        <button class="close" onclick="closeFileModal()">×</button>
+      </header>
+      <div class="breadcrumb" id="file-breadcrumb"></div>
+      <ul class="file-list" id="file-list"></ul>
+      <footer>
+        <button onclick="closeFileModal()">Annuler</button>
+        <button class="primary" id="select-current" onclick="selectCurrentDir()">
+          Choisir ce dossier
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
