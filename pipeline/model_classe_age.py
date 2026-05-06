@@ -22,6 +22,7 @@ from sklearn.metrics import (accuracy_score, f1_score,
                              ConfusionMatrixDisplay)
 import joblib
 from imblearn.over_sampling import SMOTE
+import geopandas as gpd
 
 warnings.filterwarnings("ignore")
 
@@ -71,7 +72,19 @@ print("\n" + "="*70)
 print("[1] Chargement du dataset...")
 print("="*70)
 
-df = pd.read_csv(INPUT_FILE, sep=';', encoding='utf-8-sig', low_memory=False)
+import geopandas as gpd
+
+if INPUT_FILE.lower().endswith(".gpkg"):
+    print(f"    Lecture GeoPackage : {INPUT_FILE}")
+    gdf = gpd.read_file(INPUT_FILE)
+    df = pd.DataFrame(gdf.drop(columns="geometry", errors="ignore"))
+else:
+    print(f"    Lecture CSV : {INPUT_FILE}")
+    try:
+        df = pd.read_csv(INPUT_FILE, sep=';', encoding='utf-8-sig', low_memory=False)
+    except UnicodeDecodeError:
+        df = pd.read_csv(INPUT_FILE, sep=';', encoding='latin-1', low_memory=False)
+
 print(f"    {len(df):,} tronçons chargés.")
 
 # Filtrage des classes d'âge valides (uniquement 2, 3, 4, 5)

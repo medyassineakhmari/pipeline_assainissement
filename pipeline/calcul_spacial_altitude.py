@@ -254,9 +254,21 @@ def main():
         n = gdf[col].notna().sum()
         print(f"   {col:<15} : {n:,}/{total:,} ({n/total*100:.1f}%)")
 
-    # ── Sauvegarde ────────────────────────────────────────────────────────────
+    # ── Sauvegarde — modifier en place ────────────────────────────────────────
     print(f"\n[INFO] Sauvegarde → {PATH_OUTPUT}")
-    gdf.to_file(PATH_OUTPUT, encoding="utf-8")
+
+    # Si on écrase le fichier d'entrée : suppression complète puis réécriture
+    if os.path.abspath(PATH_OUTPUT) == os.path.abspath(PATH_SHP):
+        base = os.path.splitext(PATH_SHP)[0]
+        for ext in [".shp", ".shx", ".dbf", ".prj", ".cpg", ".qix", ".sbn", ".sbx", ".qmd"]:
+            f = base + ext
+            if os.path.exists(f):
+                try:
+                    os.remove(f)
+                except Exception:
+                    pass
+
+    gdf.to_file(PATH_OUTPUT, driver="ESRI Shapefile", encoding="utf-8")
     print("[INFO] Terminé.")
 
 

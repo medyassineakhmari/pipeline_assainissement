@@ -22,6 +22,7 @@ from sklearn.metrics import (accuracy_score, f1_score,
                              ConfusionMatrixDisplay)
 import joblib
 from imblearn.over_sampling import SMOTE
+import geopandas as gpd
 
 warnings.filterwarnings("ignore")
 
@@ -66,13 +67,44 @@ COLS_CAT = ['Nature_effluent', 'Ville']
 TARGET = 'Materiau'
 
 # =============================================================================
+# 3. GESTION DU CACHE
+# =============================================================================
+imputer_path  = os.path.join(OUTPUT_DIR, "knn_imputer.pkl")
+scaler_path   = os.path.join(OUTPUT_DIR, "scaler.pkl")
+le_target_path = os.path.join(OUTPUT_DIR, "le_target.pkl")
+encoders_path = os.path.join(OUTPUT_DIR, "label_encoders.pkl")
+features_path = os.path.join(OUTPUT_DIR, "features_finales.pkl")
+model_path    = os.path.join(OUTPUT_DIR, "model_rf.pkl")
+
+cache_complet = all(os.path.exists(p) for p in [
+    imputer_path, scaler_path, le_target_path, encoders_path, features_path, model_path
+])
+
+if cache_complet:
+    print(f"\n[CACHE] Tous les artefacts trouvés dans {OUTPUT_DIR}")
+    print(f"        → Pas de réentraînement, fin du script.")
+    sys.exit(0)
+
+# =============================================================================
 # 1. CHARGEMENT ET NETTOYAGE DES DONNÉES
 # =============================================================================
 print("\n" + "="*70)
 print("[1] Chargement et filtrage initial...")
 print("="*70)
 
-df = pd.read_csv(INPUT_FILE, sep=';', encoding='utf-8-sig', low_memory=False)
+import geopandas as gpd
+
+if INPUT_FILE.lower().endswith(".gpkg"):
+    print(f"    Lecture GeoPackage : {INPUT_FILE}")
+    gdf = gpd.read_file(INPUT_FILE)
+    df = pd.DataFrame(gdf.drop(columns="geometry", errors="ignore"))
+else:
+    print(f"    Lecture CSV : {INPUT_FILE}")
+    try:
+        df = pd.read_csv(INPUT_FILE, sep=';', encoding='utf-8-sig', low_memory=False)
+    except UnicodeDecodeError:
+        df = pd.read_csv(INPUT_FILE, sep=';', encoding='latin-1', low_memory=False)
+
 print(f"    {len(df):,} tronçons chargés.")
 
 if TARGET in df.columns:
@@ -197,12 +229,12 @@ t0 = time.time()
 
 # Grille de recherche pour l'optimisation
 param_dist = {
-    'n_estimators':      [1000, 1500, 1600, 1700],
+    'n_estimators':      [1400, 1500, 1600],
     'max_depth':         [None, 30, 40],
-    'min_samples_leaf':  [1, 2],
+    'min_samples_leaf':  [1, 2, 3],
     'max_features':      ['sqrt', 0.4],
     'max_samples':       [0.8, 0.9],
-    'class_weight':      ['balanced_subsample', 'balanced', None],
+    'class_weight':      ['balanced_subsample', 'balanced'],
 }
 
 search = RandomizedSearchCV(
@@ -216,7 +248,10 @@ search = RandomizedSearchCV(
     verbose=3,
 )
 
+print(f"[DEBUG] Début RandomizedSearchCV ({30} itérations × 3 folds)...", flush=True)
 search.fit(X_train, y_train)
+print(f"[DEBUG] RandomizedSearchCV terminé", flush=True)
+
 print(f"\nMeilleurs paramètres trouvés : {search.best_params_}")
 
 rf = search.best_estimator_

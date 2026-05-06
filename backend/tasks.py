@@ -52,13 +52,15 @@ def run_step(self, step_id: str, params: dict):
     env["PIPELINE_JOB_ID"]  = job_id
     env["PYTHONUNBUFFERED"] = "1"
 
-    # N'injecter QUE si l'utilisateur n'a rien fourni (setdefault = ne pas écraser)
     env.setdefault("OUTPUT_DIR",      str(job_out_dir))
     env.setdefault("OUTPUT_DIR_BASE", str(job_out_dir))
     env.setdefault("OUTPUT_FILE",     str(job_out_dir / "Resultats_Export.csv"))
     env.setdefault("OUTPUT_GPKG",     str(job_out_dir / "Resultats_Export.gpkg"))
-    env.setdefault("PATH_OUTPUT",     str(job_out_dir / "Resultats_Export.shp"))
     env.setdefault("OUTPUT_PLOT",     str(job_out_dir / "Stats_Completude_Pretraitement.png"))
+
+    # Pour 'altitudes' : NE PAS injecter PATH_OUTPUT → le script écrase PATH_SHP par défaut
+    if step_id != "altitudes":
+        env.setdefault("PATH_OUTPUT", str(job_out_dir / "Resultats_Export.shp"))
 
     _log(job_id, "=" * 70)
     _log(job_id, f"[{datetime.now().strftime('%H:%M:%S')}] Démarrage : {step['name']}")
@@ -75,7 +77,10 @@ def run_step(self, step_id: str, params: dict):
         text=True,
         encoding="utf-8",
         errors="replace",
+        preexec_fn=os.setsid,
     )
+
+    _redis.set(f"pipeline:pid:{job_id}", process.pid, ex=86400)
 
     nb_lines = 0
     if process.stdout is not None:

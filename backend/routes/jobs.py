@@ -71,8 +71,22 @@ async def stream_logs(job_id: str):
     return EventSourceResponse(event_generator())
 
 
+import signal, os
+
 @router.post("/{job_id}/cancel")
 def cancel_job(job_id: str):
-    """Annule un job en cours d'exécution."""
-    celery_app.control.revoke(job_id, terminate=True)
+    """Annule un job en cours et tue le subprocess Python."""
+    # Récupérer le PID enregistré (voir modif tasks.py)
+    pid_key = f"pipeline:pid:{job_id}"
+    pid_str = _redis.get(pid_key)
+    
+    if pid_str:
+        try:
+            pid = int(pid_str)
+            # Kill le groupe de processus (subprocess + enfants)
+            os.killpg(os.getpgid(pid), signal.SIGTERM)
+        except (ProcessLookupError, ValueError):
+            pass
+    
+    celery_app.control.revoke(job_id, terminate=True, signal='SIGKILL')
     return {"job_id": job_id, "status": "CANCELLED"}

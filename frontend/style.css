@@ -382,3 +382,19 @@ header .subtitle {
   opacity: 0.6;
 }
 .help-tip:hover { opacity: 1; }
+
+
+.cancel-button {
+  margin-top: 0.75rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.cancel-button:hover { background: #b91c1c; }
+.cancel-button:disabled { background: #9ca3af; cursor: not-allowed; }
+
+.status-CANCELLED { background: #fee2e2; color: #991b1b; }

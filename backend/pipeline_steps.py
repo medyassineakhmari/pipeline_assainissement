@@ -99,6 +99,8 @@ PIPELINE_STEPS = [
             {"env_var": "INPUT_FILE", "label": "BDD prétraitée (.gpkg ou .csv)",
              "type": "file",      "required": True, "default": "",
              "extensions": [".gpkg", ".csv"]},
+             {"env_var": "OUTPUT_DIR", "label": "Dossier de sortie / cache",
+                    "type": "directory", "required": True, "default": ""},
         ],
     },
     {
@@ -127,6 +129,8 @@ PIPELINE_STEPS = [
             {"env_var": "INPUT_FILE", "label": "BDD avec matériau complété",
              "type": "file",   "required": True, "default": "",
              "extensions": [".gpkg", ".csv"]},
+             {"env_var": "OUTPUT_DIR", "label": "Dossier de sortie / cache",
+                        "type": "string", "required": True, "default": ""},
         ],
     },
     {

@@ -167,8 +167,27 @@ function showJobInfo(job) {
     <div><strong>Étape :</strong> ${currentStep.name}</div>
     <div><strong>Job :</strong> <code>${job.job_id.substring(0, 8)}…</code></div>
     <div><strong>Statut :</strong> <span class="status-badge status-${job.status}" id="status-badge">${job.status}</span></div>
+    <button class="cancel-button" id="cancel-btn">⛔ Annuler</button>
   `;
   document.getElementById("logs").textContent = "";
+
+  // Attacher l'handler après injection HTML
+  const btn = document.getElementById("cancel-btn");
+  btn.addEventListener("click", () => cancelJob(job.job_id));
+}
+
+async function cancelJob(jobId) {
+  if (!confirm("Annuler cette tâche ? Le subprocess sera tué.")) return;
+  try {
+    await apiPost(`/jobs/${jobId}/cancel`);
+    updateStatus("CANCELLED");
+    if (eventSource) eventSource.close();
+    document.querySelector(".run-button").disabled = false;
+    const btn = document.getElementById("cancel-btn");
+    if (btn) btn.disabled = true;
+  } catch (e) {
+    alert(`Erreur annulation : ${e.message}`);
+  }
 }
 
 function updateStatus(status) {
@@ -176,6 +195,11 @@ function updateStatus(status) {
   if (badge) {
     badge.textContent = status;
     badge.className = `status-badge status-${status}`;
+  }
+  // Cache le bouton si terminé
+  const btn = document.getElementById("cancel-btn");
+  if (btn && ["SUCCESS", "FAILURE", "CANCELLED"].includes(status)) {
+    btn.disabled = true;
   }
 }
 

@@ -39,7 +39,7 @@ def _env_optional(name, default=""):
 
 INPUT_FILE  = _env_required("INPUT_FILE")
 MODEL_DIR   = _env_required("MODEL_DIR")
-BEST_MODEL  = _env_required("BEST_MODEL")
+BEST_MODEL  = _env_optional("BEST_MODEL", "model_rf.pkl")
 OUTPUT_FILE = _env_required("OUTPUT_FILE")
 OUTPUT_GPKG = _env_required("OUTPUT_GPKG")
 KNN_K        = 7
